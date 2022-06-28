@@ -15,6 +15,12 @@
             backgroundColor: "pink",
           },
         },
+        {
+          xpath: '//*[@id="pink"]',
+          callback: () => {
+            console.log("running callback");
+          },
+        },
       ];
       function getElementByXpath(path) {
         return document.evaluate(
@@ -30,17 +36,25 @@
         return `contains(concat(' ',normalize-space(@class),' '),' ${className} ')`;
       }
 
-      function checkNodes() {
+      function checkNodes(mutations) {
         nodesToMutate.forEach((item, index) => {
           if (!item.done) {
             var content = getElementByXpath(item.xpath);
             if (content) {
               console.log("got content", item, content);
               // apply styles
-              Object.keys(item.style).forEach((styleItem) => {
-                console.log("applying style", styleItem, item.style[styleItem]);
-                content.style[styleItem] = item.style[styleItem];
-              });
+              item.style &&
+                Object.keys(item.style).forEach((styleItem) => {
+                  console.log(
+                    "applying style",
+                    styleItem,
+                    item.style[styleItem]
+                  );
+                  content.style[styleItem] = item.style[styleItem];
+                });
+              if (item.callback) {
+                item.callback();
+              }
               nodesToMutate[index] = { ...item, done: true };
             }
           }
