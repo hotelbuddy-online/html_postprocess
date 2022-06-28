@@ -10,37 +10,55 @@
           style: { display: "flex" },
         },
         {
-          xpath: '//*[@id="pink"]',
-          style: {
-            backgroundColor: "pink",
+          xpath: '//*[@id="accordion"]',
+          callback: () => {
+            console.log("got accordian");
+            jQuery(function ($) {
+              $("#accordion").accordion({
+                heightStyle: "content",
+                collapsible: true,
+                header: "h5",
+              });
+            });
           },
         },
         {
-          xpath: '//*[@id="pink"]',
-          callback: () => {
-            console.log("running callback");
+          xpath: `//*[${xpathContainsClass("accordion-item")}]`,
+          style: {
+            border: "1px solid #06315C",
+            padding: "10px",
+            marginBottom: "10px",
           },
         },
+        // {
+        //   xpath:'//*[]',
+        //   style:{
+        //   },
+        // },
+        // {
+        //   xpath:'//*[]',
+        //   style:{
+        //   },
+        // },
       ];
       function getElementByXpath(path) {
         return document.evaluate(
           path,
           document,
           null,
-          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
           null
-        ).singleNodeValue;
+        );
       }
-
       function xpathContainsClass(className) {
         return `contains(concat(' ',normalize-space(@class),' '),' ${className} ')`;
       }
-
       function checkNodes(mutations) {
         nodesToMutate.forEach((item, index) => {
           if (!item.done) {
-            var content = getElementByXpath(item.xpath);
-            if (content) {
+            var snapshot = getElementByXpath(item.xpath);
+            for (var i = 0; i < snapshot.snapshotLength; i++) {
+              const content = snapshot.snapshotItem(i);
               console.log("got content", item, content);
               // apply styles
               item.style &&
@@ -60,14 +78,10 @@
           }
         });
       }
-
-      let observer = new MutationObserver((mutations) => {
-        checkNodes();
-      });
-
+      let observer = new MutationObserver(checkNodes);
       window.addEventListener("DOMContentLoaded", (event) => {
         checkNodes();
-        observer.observe(document, {
+        observer.observe(document.getElementById("my-store-75883006"), {
           childList: true,
           subtree: true,
         });
