@@ -33,10 +33,9 @@
       function checkNodes() {
         nodesToMutate.forEach((item, index) => {
           if (!item.done) {
-            console.log("checking", item);
             var content = getElementByXpath(item.xpath);
             if (content) {
-              console.log("got content", content);
+              console.log("got content", item, content);
               // apply styles
               Object.keys(item.style).forEach((styleItem) => {
                 console.log("applying style", styleItem, item.style[styleItem]);
