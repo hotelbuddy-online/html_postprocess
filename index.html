@@ -42,8 +42,8 @@
                 console.log("applying style", styleItem, item.style[styleItem]);
                 content.style[styleItem] = item.style[styleItem];
               });
+              nodesToMutate[index] = { ...item, done: true };
             }
-            nodesToMutate[index] = { ...item, done: true };
           }
         });
       }
