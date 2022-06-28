@@ -7,7 +7,7 @@
             "details-product-option--additions"
           )}]/div[2]`,
           done: false,
-          style: {},
+          style: { display: "flex" },
         },
         {
           xpath: '//*[@id="pink"]',
@@ -49,27 +49,12 @@
       }
 
       let observer = new MutationObserver((mutations) => {
-        console.log("mutations");
-        // let productDetails = document.getElementsByClassName(
-        //   "product-details-module__content"
-        // );
-        // if (productDetails.length > 0) {
-        //   console.log("got details", productDetails);
-        // }
-        // var content = getElementByXpath(
-        //   `//div[${xpathContainsClass(
-        //     "details-product-option--additions"
-        //   )}]/div[2]`
-        // );
-        // content.style.display = "flex";
-        // content.style.flexDirection = "row";
         checkNodes();
       });
 
       window.addEventListener("DOMContentLoaded", (event) => {
-        console.log("DOM fully loaded and parsed");
         checkNodes();
-        observer.observe(document.getElementById(document), {
+        observer.observe(document, {
           childList: true,
           subtree: true,
         });
