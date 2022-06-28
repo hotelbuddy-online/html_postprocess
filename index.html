@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <script>
+      var nodesToMutate = [
+        {
+          xpath: `//div[${xpathContainsClass(
+            "details-product-option--additions"
+          )}]/div[2]`,
+          done: false,
+          style: {},
+        },
+      ];
+      function getElementByXpath(path) {
+        return document.evaluate(
+          path,
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null
+        ).singleNodeValue;
+      }
+
+      function xpathContainsClass(className) {
+        return `contains(concat(' ',normalize-space(@class),' '),' ${className} ')`;
+      }
+
+      function checkNodes() {
+        nodesToMutate.forEach((item) => {
+          if (!item.done) {
+            console.log("checking", item);
+            var content = getElementByXpath(item.xpath);
+            if (cntent) {
+              console.log("got content", content);
+              Object.keys(item.styles).forEach((styleItem) => {
+                console.log(
+                  "applying style",
+                  styleItem,
+                  item.styles[styleItem]
+                );
+                content.style[styleItem] = item.styles[styleItem];
+              });
+            }
+          }
+        });
+      }
+
+      let observer = new MutationObserver((mutations) => {
+        console.log("mutations");
+        // let productDetails = document.getElementsByClassName(
+        //   "product-details-module__content"
+        // );
+        // if (productDetails.length > 0) {
+        //   console.log("got details", productDetails);
+        // }
+        // var content = getElementByXpath(
+        //   `//div[${xpathContainsClass(
+        //     "details-product-option--additions"
+        //   )}]/div[2]`
+        // );
+        // content.style.display = "flex";
+        // content.style.flexDirection = "row";
+        checkNodes();
+      });
+
+      window.addEventListener("DOMContentLoaded", (event) => {
+        console.log("DOM fully loaded and parsed");
+        checkNodes();
+        observer.observe(document.getElementById(document), {
+          childList: true,
+          subtree: true,
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="pink"></div>
+  </body>
+</html>
