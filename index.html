@@ -9,6 +9,12 @@
           done: false,
           style: {},
         },
+        {
+          xpath: '//*[@id="pink"]',
+          style: {
+            backgroundColor: "pink",
+          },
+        },
       ];
       function getElementByXpath(path) {
         return document.evaluate(
@@ -25,21 +31,19 @@
       }
 
       function checkNodes() {
-        nodesToMutate.forEach((item) => {
+        nodesToMutate.forEach((item, index) => {
           if (!item.done) {
             console.log("checking", item);
             var content = getElementByXpath(item.xpath);
-            if (cntent) {
+            if (content) {
               console.log("got content", content);
-              Object.keys(item.styles).forEach((styleItem) => {
-                console.log(
-                  "applying style",
-                  styleItem,
-                  item.styles[styleItem]
-                );
-                content.style[styleItem] = item.styles[styleItem];
+              // apply styles
+              Object.keys(item.style).forEach((styleItem) => {
+                console.log("applying style", styleItem, item.style[styleItem]);
+                content.style[styleItem] = item.style[styleItem];
               });
             }
+            nodesToMutate[index] = { ...item, done: true };
           }
         });
       }
@@ -73,6 +77,7 @@
     </script>
   </head>
   <body>
-    <div id="pink"></div>
+    <div id="pink">pink background</div>
+    <h1>Hello</h1>
   </body>
 </html>
