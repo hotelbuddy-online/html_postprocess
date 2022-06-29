@@ -4,10 +4,18 @@
       var nodesToMutate = [
         {
           xpath: `//div[${xpathContainsClass(
-            "details-product-option--additions"
+            "details-product-option__title"
           )}]/div[2]`,
           done: false,
           style: { display: "flex" },
+        },
+        {
+          xpath: `//*[${xpathContainsClass(
+            "details-product-option--Add-some-more-magic"
+          )}]`,
+          style: {
+            maxWidth: "1000pc",
+          },
         },
         {
           xpath: '//*[@id="accordion"]',
@@ -30,21 +38,36 @@
             marginBottom: "10px",
           },
         },
-        // {
-        //   xpath:'//*[]',
-        //   style:{
-        //   },
-        // },
+        {
+          xpath: `//*[${xpathContainsClass("product-details__gallery")}]`,
+          minWidth: 529,
+          style: {
+            width: "50%",
+          },
+        },
+        {
+          xpath: `//*[${xpathContainsClass("product-details__sidebar")}]`,
+          minWidth: 529,
+          style: {
+            width: "50%",
+          },
+        },
+        {
+          xpath: '//*[contains(text(),"<<")]',
+          style: {
+            backgroundColor: "pink",
+          },
+        },
         // {
         //   xpath:'//*[]',
         //   style:{
         //   },
         // },
       ];
-      function getElementByXpath(path) {
+      function getElementByXpath(root, path) {
         return document.evaluate(
           path,
-          document,
+          root,
           null,
           XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
           null
@@ -53,43 +76,56 @@
       function xpathContainsClass(className) {
         return `contains(concat(' ',normalize-space(@class),' '),' ${className} ')`;
       }
-      function checkNodes(mutations) {
+      function checkNodes(mutations, root) {
         nodesToMutate.forEach((item, index) => {
           if (!item.done) {
-            var snapshot = getElementByXpath(item.xpath);
-            for (var i = 0; i < snapshot.snapshotLength; i++) {
-              const content = snapshot.snapshotItem(i);
-              console.log("got content", item, content);
-              // apply styles
-              item.style &&
-                Object.keys(item.style).forEach((styleItem) => {
-                  console.log(
-                    "applying style",
-                    styleItem,
-                    item.style[styleItem]
-                  );
-                  content.style[styleItem] = item.style[styleItem];
-                });
-              if (item.callback) {
-                item.callback();
+            if (!item.minWidth || document.body.clientWidth > item.minWidth) {
+              var snapshot = getElementByXpath(root, item.xpath);
+              for (var i = 0; i < snapshot.snapshotLength; i++) {
+                const content = snapshot.snapshotItem(i);
+                if (content.localName !== "script") {
+                  console.log("got content", item, content);
+                  if (item.xpath == '//*[contains(text(),"<<")]') {
+                    console.log("parsing html", content);
+                    // dirty
+                    content.innerHTML = content.textContent.substring(
+                      1,
+                      content.textContent.length - 1
+                    );
+                  }
+                  // apply styles
+                  item.style &&
+                    Object.keys(item.style).forEach((styleItem) => {
+                      console.log(
+                        "applying style",
+                        styleItem,
+                        item.style[styleItem]
+                      );
+                      content.style[styleItem] = item.style[styleItem];
+                    });
+                  if (item.callback) {
+                    item.callback();
+                  }
+                  nodesToMutate[index] = { ...item, done: true };
+                }
               }
-              nodesToMutate[index] = { ...item, done: true };
             }
           }
         });
       }
       let observer = new MutationObserver(checkNodes);
       window.addEventListener("DOMContentLoaded", (event) => {
-        checkNodes();
-        observer.observe(document.getElementById("my-store-75883006"), {
+        checkNodes(null, document.getElementById("root"));
+        observer.observe(document.getElementById("root"), {
           childList: true,
           subtree: true,
         });
       });
     </script>
   </head>
-  <body>
+  <body id="root">
     <div id="pink">pink background</div>
     <h1>Hello</h1>
+    <p>&lt;&lt;a href="#2"&gt;Shipping and delivery&lt;/a&gt;&gt;</p>
   </body>
 </html>
