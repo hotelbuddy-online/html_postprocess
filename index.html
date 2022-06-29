@@ -54,9 +54,6 @@
         },
         {
           xpath: '//*[contains(text(),"<<")]',
-          style: {
-            backgroundColor: "pink",
-          },
         },
         // {
         //   xpath:'//*[]',
@@ -113,7 +110,9 @@
           }
         });
       }
-      let observer = new MutationObserver(checkNodes);
+      let observer = new MutationObserver((mutations) =>
+        checkNodes(mutations, document.getElementById("root"))
+      );
       window.addEventListener("DOMContentLoaded", (event) => {
         checkNodes(null, document.getElementById("root"));
         observer.observe(document.getElementById("root"), {
