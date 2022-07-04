@@ -1,0 +1,307 @@
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=UA-162005575-1"
+></script>
+<link
+  rel="stylesheet"
+  href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
+  integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+  crossorigin="anonymous"
+/>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "UA-162005575-1");
+</script>
+<script>
+  console.log("starting script");
+  // function createElementFromHTML(htmlString) {
+  //   var div = document.createElement('div');
+  //   div.innerHTML = htmlString.trim();
+  //   // Change this to div.childNodes to support multiple top-level nodes.
+  //   return div.firstChild;
+  // }
+  // const addItems={
+  //     'cheese kit':{
+  //         src:'https://static-shpf1.mageworx.com/img/uploads/productoptions/9144/fcdb9063bcfab897f3b05afd603fd25d.jpg',
+  //         href:'https//www.google.com'
+  //     }
+  // }
+  var nodesToMutate = [
+    {
+      xpath: `//div[${xpathContainsClass(
+        "details-product-option--Add-some-more-magic"
+      )}]/div[2]`,
+      done: false,
+      style: { display: "flex" },
+    },
+    // Add-some-more-magic items
+    {
+      xpath: `//div[${xpathContainsClass(
+        "details-product-option--Add-some-more-magic"
+      )}]/div[2]/div`,
+      style: {
+        margin: "5px",
+        border: "2px solid #b1dbdc",
+        height: "200px",
+      },
+    },
+    {
+      xpath: `//div[${xpathContainsClass(
+        "details-product-option--Add-some-more-magic"
+      )}]/div[2]/div/div[2]/label`,
+      style: {
+        left: "2px",
+        position: "absolute",
+        top: "-10px",
+        bottom: "0px",
+        whiteSpace: "pre-wrap",
+      },
+      callback: (el) => {
+        console.log("adding spaces", el);
+        // const itemName = el.firstChild.textContent
+        el.textContent = "     " + el.textContent;
+        // const src=addItems[itemName] && addItems[itemName].src, href=addItems[itemName] && addItems[itemName].href
+        // if (src && href) {
+        //     var img = createElementFromHTML(`<a style="width: 100%; height: 120px; position: absolute; bottom: 0px;" href="${href}"><img style="width: 100%; height: 100%;" src="${src}"/></a>`)
+        //     el.parentNode.parentNode.appendChild(img)
+        // }
+      },
+    },
+    {
+      xpath: `//*[${xpathContainsClass(
+        "details-product-option--Add-some-more-magic"
+      )}]`,
+      style: {
+        maxWidth: "1000pc",
+      },
+    },
+    {
+      xpath: `//*[${xpathContainsClass("product-details-module")}]//a`,
+      style: {
+        color: "#b1dbdc",
+      },
+    },
+    {
+      xpath: '//*[@id="accordion"]',
+      callback: () => {
+        console.log("got accordian");
+        jQuery(function ($) {
+          $("#accordion").accordion({
+            heightStyle: "content",
+            collapsible: true,
+            header: "h3",
+          });
+        });
+      },
+    },
+    {
+      xpath: `//*[${xpathContainsClass("accordion-item")}]`,
+      style: {
+        border: "1px solid #06315C",
+        padding: "10px",
+        marginBottom: "10px",
+      },
+    },
+    {
+      xpath: `//*[${xpathContainsClass("product-details__gallery")}]`,
+      minWidth: 529,
+      style: {
+        width: "50%",
+      },
+    },
+    {
+      xpath: `//*[${xpathContainsClass("product-details__sidebar")}]`,
+      minWidth: 529,
+      style: {
+        width: "50%",
+      },
+    },
+    // this is needed to parse << >>
+    {
+      xpath: '//*[contains(text(),"<<")]',
+    },
+    // {
+    //   xpath:'//*[]',
+    //   style:{
+    //   },
+    // },
+  ];
+  function getElementByXpath(root, path) {
+    return document.evaluate(
+      path,
+      root,
+      null,
+      XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
+      null
+    );
+  }
+  function xpathContainsClass(className) {
+    return `contains(concat(' ',normalize-space(@class),' '),' ${className} ')`;
+  }
+  function checkNodes(mutations, root) {
+    nodesToMutate.forEach((item, index) => {
+      if (!item.done) {
+        if (!item.minWidth || document.body.clientWidth > item.minWidth) {
+          var snapshot = getElementByXpath(root, item.xpath);
+          for (var i = 0; i < snapshot.snapshotLength; i++) {
+            const content = snapshot.snapshotItem(i);
+            if (content.localName !== "script") {
+              console.log("got content", item, content);
+              if (item.xpath == '//*[contains(text(),"<<")]') {
+                console.log("parsing html", content);
+                // dirty
+                content.innerHTML = content.textContent.substring(
+                  1,
+                  content.textContent.length - 1
+                );
+              }
+              // apply styles
+              item.style &&
+                Object.keys(item.style).forEach((styleItem) => {
+                  console.log(
+                    "applying style",
+                    styleItem,
+                    item.style[styleItem]
+                  );
+                  content.style[styleItem] = item.style[styleItem];
+                });
+              if (item.callback) {
+                item.callback(content);
+              }
+              nodesToMutate[index] = { ...item, done: true };
+            }
+          }
+        }
+      }
+    });
+  }
+  let observer = new MutationObserver((mutations) =>
+    checkNodes(mutations, document.getElementById("root"))
+  );
+  window.addEventListener("DOMContentLoaded", (event) => {
+    checkNodes(null, document.getElementById("root"));
+    observer.observe(document.getElementById("root"), {
+      childList: true,
+      subtree: true,
+    });
+  });
+</script>
+<!-- accordian -->
+<style>
+  @font-face {
+    src: url("/-_-/common/fonts/BalooChettan-latin_latin-ext-regular.eot");
+    src: local("BalooChettan Regular"), local("BalooChettan-Regular");
+    src: url("/-_-/common/fonts/BalooChettan-latin_latin-ext-regular.eot?#iefix")
+      format("embedded-opentype");
+    src: url("/-_-/common/fonts/BalooChettan-latin_latin-ext-regular.woff2")
+      format("woff2");
+    src: url("/-_-/common/fonts/BalooChettan-latin_latin-ext-regular.woff")
+      format("woff");
+    src: url("/-_-/common/fonts/BalooChettan-latin_latin-ext-regular.ttf")
+      format("truetype");
+    src: url("/-_-/common/fonts/BalooChettan-latin_latin-ext-regular.svg#BalooChettan")
+      format("svg");
+    font-family: BalooChettan;
+    font-style: normal;
+    font-weight: 400;
+    src: url("/-_-/common/fonts/BalooChettan-latin_latin-ext-regular.woff")
+      format("woff");
+  }
+  a:-webkit-any-link {
+    cursor: pointer;
+    text-decoration: none;
+  }
+  a:hover {
+    color: #00bbde;
+  }
+  /* Accordion */
+  #accordion .accordion-item {
+    border: 1px solid #06315c;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-family: BalooChettan;
+  }
+  .ui-accordion .ui-accordion-header {
+    cursor: pointer;
+    font-family: BalooChettan;
+    color: #b1dbdc;
+    text-transform: uppercase;
+  }
+  .ui-accordion .ui-accordion-header:after {
+    font-family: FontAwesome;
+    font-weight: 600;
+    content: "\f107";
+    /*margin-right: 10px;*/
+    width: 20px;
+    display: inline-block;
+    float: right;
+  }
+  .ui-accordion .ui-accordion-li-fix {
+    display: inline;
+  }
+  .ui-accordion .ui-accordion-header-active {
+    border-bottom: 0 !important;
+  }
+  .ui-accordion .ui-accordion-header-active:after {
+    font-family: FontAwesome;
+    content: "\f106";
+  }
+  .ui-accordion .ui-accordion-header a {
+    /*display: block;*/
+    font-size: 1em;
+    padding: 0.5em 0.5em 0.5em 0.7em;
+  }
+  /* IE7-/Win - Fix extra vertical space in lists */
+  .ui-accordion a {
+    zoom: 1;
+    /*display: block;*/
+    font-weight: 600;
+    margin-top: 6px;
+  }
+  .ui-accordion-icons .ui-accordion-header a {
+    padding-left: 2.2em;
+  }
+  .ui-accordion .ui-accordion-header .ui-icon {
+    position: absolute;
+    left: 0 !important;
+    top: 50%;
+    margin-top: -8px;
+  }
+  .ui-accordion .ui-accordion-content {
+    border: none;
+    position: relative;
+    top: 1px;
+    margin-top: 20px;
+    margin-bottom: 2px;
+    overflow: auto;
+    display: none;
+    zoom: 1;
+    padding: 0 10px 20px 0;
+  }
+  .ui-accordion .ui-accordion-content-active {
+    display: block;
+  }
+  /* Additions */
+  .form-control__inline-label {
+    color: #b11280;
+    line-height: 1.3;
+  }
+  .product-details-module__content {
+    font-family: BalooChettan;
+    font-size: large;
+  }
+  /* FAQ  */
+</style>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"
+></script>
