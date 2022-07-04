@@ -150,7 +150,8 @@
         if (!item.minWidth || document.body.clientWidth > item.minWidth) {
           var snapshot = getElementByXpath(root, item.xpath);
           for (var i = 0; i < snapshot.snapshotLength; i++) {
-            if (item.finish) th_interval.clearInterval();
+            if (item.finish && th_interval.clearInterval)
+              th_interval.clearInterval();
             const content = snapshot.snapshotItem(i);
             if (content.localName !== "script") {
               console.log("got content", item, content);
@@ -191,6 +192,10 @@
       childList: true,
       subtree: true,
     });
+    th_interval = setInterval(() => {
+      console.log("interval");
+      checkNodes(null, document.getElementById("root"));
+    }, 100);
   });
 </script>
 <!-- accordian -->
