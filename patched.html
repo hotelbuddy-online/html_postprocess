@@ -195,10 +195,11 @@
       childList: true,
       subtree: true,
     });
-    th_interval = setInterval(() => {
-      console.log("interval");
-      checkNodes(null, document.getElementById("root"));
-    }, 100);
+    if (window.location.href.includes("store-page"))
+      th_interval = setInterval(() => {
+        console.log("interval");
+        checkNodes(null, document.getElementById("root"));
+      }, 100);
   });
 </script>
 <!-- accordian -->
