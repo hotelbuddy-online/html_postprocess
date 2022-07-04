@@ -63,13 +63,16 @@
       },
       callback: (el) => {
         console.log("adding spaces", el);
-        // const itemName = el.firstChild.textContent
+        const itemName = el.firstChild.textContent;
         el.textContent = "     " + el.textContent;
-        // const src=addItems[itemName] && addItems[itemName].src, href=addItems[itemName] && addItems[itemName].href
-        // if (src && href) {
-        //     var img = createElementFromHTML(`<a style="width: 100%; height: 120px; position: absolute; bottom: 0px;" href="${href}"><img style="width: 100%; height: 100%;" src="${src}"/></a>`)
-        //     el.parentNode.parentNode.appendChild(img)
-        // }
+        const src = addItems[itemName] && addItems[itemName].src,
+          href = addItems[itemName] && addItems[itemName].href;
+        if (src && href) {
+          var img = createElementFromHTML(
+            `<a style="width: 100%; height: 120px; position: absolute; bottom: 0px;" href="${href}"><img style="width: 100%; height: 100%;" src="${src}"/></a>`
+          );
+          el.parentNode.parentNode.appendChild(img);
+        }
       },
     },
     {
