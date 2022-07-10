@@ -18,12 +18,39 @@
   gtag("config", "UA-162005575-1");
 </script>
 <script>
+  console.log("starting script");
+  var lastUrl;
+  function createElementFromHTML(htmlString) {
+    var div = document.createElement("div");
+    div.innerHTML = htmlString.trim();
+    // Change this to div.childNodes to support multiple top-level nodes.
+    return div.firstChild;
+  }
+  const substitutions = {
+    // add items
+    "cheese kit": {
+      src: "-_-/res/4a13cd0a-231e-4023-ab2d-2e89381ba323/images/files/4a13cd0a-231e-4023-ab2d-2e89381ba323/fd1c9207-9723-4821-8c90-32076aa41a66/541-384/b8d164887ce39f51ba82f3d8bcacbe4a3e700f1f",
+      href: "shop?store-page=Cheese-making-kit-p471785822",
+    },
+    "mushroom kit": {
+      src: "-_-/res/4a13cd0a-231e-4023-ab2d-2e89381ba323/images/files/4a13cd0a-231e-4023-ab2d-2e89381ba323/7fbf4c97-84bc-4682-9706-ed3bd759e6e3/541-384/0963c8bf7cffad484c1223cb964037957a389f36",
+      href: "shop?store-page=Mushroom-Grow-Kit-p470429064",
+    },
+    "microgreens kit": {
+      src: "-_-/res/4a13cd0a-231e-4023-ab2d-2e89381ba323/images/files/4a13cd0a-231e-4023-ab2d-2e89381ba323/61a8cd38-d4a3-4e55-8478-95d6f8fdad24/541-384/8a930f69024041ea12dc496b127fccb854fca94b",
+      href: "shop?store-page=Microgreens-kit-p477030780",
+    },
+    "homebrew kit": {
+      src: "-_-/res/4a13cd0a-231e-4023-ab2d-2e89381ba323/images/files/4a13cd0a-231e-4023-ab2d-2e89381ba323/aeb93435-38ae-49ed-94c5-7629aaa40674/541-384/4d3c057a0a330650191cc13b14c0bc295cfe97fc",
+      href: "shop?store-page=Brewing-kit-p475790729",
+    },
+  };
   var nodesToMutate = [
     {
       xpath: `//div[${xpathContainsClass(
         "details-product-option--Add-some-more-magic"
       )}]/div[2]`,
-      done: false,
+      finish: true,
       style: { display: "flex" },
     },
     // Add-some-more-magic items
@@ -34,6 +61,32 @@
       style: {
         margin: "5px",
         border: "2px solid #b1dbdc",
+        height: "200px",
+      },
+    },
+    {
+      xpath: `//div[${xpathContainsClass(
+        "details-product-option--Add-some-more-magic"
+      )}]/div[2]/div/div[2]/label`,
+      style: {
+        left: "2px",
+        position: "absolute",
+        top: "-10px",
+        bottom: "0px",
+        whiteSpace: "pre-wrap",
+      },
+      callback: (el) => {
+        console.log("adding spaces", el);
+        const itemName = el.firstChild.textContent;
+        el.textContent = "     " + el.textContent;
+        const src = substitutions[itemName] && substitutions[itemName].src,
+          href = substitutions[itemName] && substitutions[itemName].href;
+        if (src && href) {
+          var img = createElementFromHTML(
+            `<a style="width: 100%; height: 120px; position: absolute; bottom: 0px;" href="${href}"><img style="width: 100%; height: 100%;" src="${src}"/></a>`
+          );
+          el.parentNode.parentNode.appendChild(img);
+        }
       },
     },
     {
@@ -85,6 +138,35 @@
         width: "50%",
       },
     },
+    // navbar
+    {
+      xpath: '//li/a[text()="Mushrooms"]',
+      callback: (el) => {
+        console.log("got navbar", el);
+        el.href = "shop?store-page=Mushrooms-c134325264";
+      },
+    },
+    {
+      xpath: '//li/a[text()="Microgreens"]',
+      callback: (el) => {
+        console.log("got navbar", el);
+        el.href = "shop?store-page=Hydroponics-c134325517";
+      },
+    },
+    {
+      xpath: '//li/a[text()="Homebrew"]',
+      callback: (el) => {
+        console.log("got navbar", el);
+        el.href = "shop?store-page=Brewing-c134322444";
+      },
+    },
+    {
+      xpath: '//li/a[text()="Cheese"]',
+      callback: (el) => {
+        console.log("got navbar", el);
+        el.href = "shop?store-page=Cheese-c134672252";
+      },
+    },
     // this is needed to parse << >>
     {
       xpath: '//*[contains(text(),"<<")]',
@@ -95,6 +177,7 @@
     //   },
     // },
   ];
+  var th_interval;
   function getElementByXpath(root, path) {
     return document.evaluate(
       path,
@@ -108,11 +191,21 @@
     return `contains(concat(' ',normalize-space(@class),' '),' ${className} ')`;
   }
   function checkNodes(mutations, root) {
+    console.log("checking");
+    if (lastUrl && lastUrl !== location.href) {
+      console.log("resetiing dones");
+      nodesToMutate.forEach(item, (index) => {
+        nodesToMutate[index].done = false;
+      });
+      console.log("nodesToMutate", nodesToMutate);
+    }
+    lastUrl = location.href;
     nodesToMutate.forEach((item, index) => {
       if (!item.done) {
         if (!item.minWidth || document.body.clientWidth > item.minWidth) {
           var snapshot = getElementByXpath(root, item.xpath);
           for (var i = 0; i < snapshot.snapshotLength; i++) {
+            if (item.finish && th_interval) th_interval.clearInterval();
             const content = snapshot.snapshotItem(i);
             if (content.localName !== "script") {
               console.log("got content", item, content);
@@ -135,7 +228,7 @@
                   content.style[styleItem] = item.style[styleItem];
                 });
               if (item.callback) {
-                item.callback();
+                item.callback(content);
               }
               nodesToMutate[index] = { ...item, done: true };
             }
@@ -175,6 +268,13 @@
     font-weight: 400;
     src: url("/-_-/common/fonts/BalooChettan-latin_latin-ext-regular.woff")
       format("woff");
+  }
+  a:-webkit-any-link {
+    cursor: pointer;
+    text-decoration: none;
+  }
+  a:hover {
+    color: #00bbde;
   }
   /* Accordion */
   #accordion .accordion-item {
@@ -245,12 +345,7 @@
   }
   /* Additions */
   .form-control__inline-label {
-    font-family: BalooChettan;
-    font-size: large;
-    letter-spacing: 1px;
-    font-size: 16px;
     color: #b11280;
-    min-height: 35px;
     line-height: 1.3;
   }
   .product-details-module__content {
