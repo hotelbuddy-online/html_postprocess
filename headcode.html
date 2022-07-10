@@ -19,7 +19,7 @@
 </script>
 <script>
   console.log("starting script");
-  var lastUrl;
+//   var lastUrl;
   function createElementFromHTML(htmlString) {
     var div = document.createElement("div");
     div.innerHTML = htmlString.trim();
@@ -78,7 +78,7 @@
       callback: (el) => {
         console.log("adding spaces", el);
         const itemName = el.firstChild.textContent;
-        el.textContent = "     " + el.textContent;
+        if (!(el.textContent.startsWith(' '))) el.textContent = "     " + el.textContent;
         const src = substitutions[itemName] && substitutions[itemName].src,
           href = substitutions[itemName] && substitutions[itemName].href;
         if (src && href) {
@@ -192,16 +192,16 @@
   }
   function checkNodes(mutations, root) {
     console.log("checking");
-    if (lastUrl && lastUrl !== location.href) {
-      console.log("resetiing dones");
-      nodesToMutate.forEach((item, index) => {
-        nodesToMutate[index].done = false;
-      });
-      console.log("nodesToMutate", nodesToMutate);
-    }
-    lastUrl = location.href;
+    // if (lastUrl && lastUrl !== location.href) {
+    //   console.log("resetiing dones");
+    //   nodesToMutate.forEach((item, index) => {
+    //     nodesToMutate[index].done = false;
+    //   });
+    //   console.log("nodesToMutate", nodesToMutate);
+    // }
+    // lastUrl = location.href;
     nodesToMutate.forEach((item, index) => {
-      if (!item.done) {
+    //   if (!item.done) {
         if (!item.minWidth || document.body.clientWidth > item.minWidth) {
           var snapshot = getElementByXpath(root, item.xpath);
           for (var i = 0; i < snapshot.snapshotLength; i++) {
@@ -234,7 +234,7 @@
             }
           }
         }
-      }
+    //   }
     });
   }
   let observer = new MutationObserver((mutations) =>
