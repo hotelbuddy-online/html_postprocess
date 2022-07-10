@@ -194,7 +194,7 @@
     console.log("checking");
     if (lastUrl && lastUrl !== location.href) {
       console.log("resetiing dones");
-      nodesToMutate.forEach(item, (index) => {
+      nodesToMutate.forEach((item, index) => {
         nodesToMutate[index].done = false;
       });
       console.log("nodesToMutate", nodesToMutate);
