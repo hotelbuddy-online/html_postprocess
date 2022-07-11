@@ -19,7 +19,7 @@
 </script>
 <script>
   console.log("starting script");
-//   var lastUrl;
+  //   var lastUrl;
   function createElementFromHTML(htmlString) {
     var div = document.createElement("div");
     div.innerHTML = htmlString.trim();
@@ -69,21 +69,23 @@
         "details-product-option--Add-some-more-magic"
       )}]/div[2]/div/div[2]/label`,
       style: {
-        left: "2px",
+        left: "9px",
         position: "absolute",
-        top: "-10px",
+        top: "2px",
         bottom: "0px",
         whiteSpace: "pre-wrap",
+        cursor: "pointer",
       },
       callback: (el) => {
         console.log("adding spaces", el);
         const itemName = el.firstChild.textContent;
-        if (!(el.textContent.startsWith(' '))) el.textContent = "     " + el.textContent;
+        if (!el.textContent.startsWith(" "))
+          el.textContent = "     " + el.textContent.replace(" (", "\r\n(");
         const src = substitutions[itemName] && substitutions[itemName].src,
           href = substitutions[itemName] && substitutions[itemName].href;
         if (src && href) {
           var img = createElementFromHTML(
-            `<a style="width: 100%; height: 120px; position: absolute; bottom: 0px;" href="${href}"><img style="width: 100%; height: 100%;" src="${src}"/></a>`
+            `<a style="width: 100%; height: 120px; position: absolute; bottom: 0px; cursor: pointer" href="${href}"><img style="width: 100%; height: 100%;" src="${src}"/></a>`
           );
           el.parentNode.parentNode.appendChild(img);
         }
@@ -201,40 +203,36 @@
     // }
     // lastUrl = location.href;
     nodesToMutate.forEach((item, index) => {
-    //   if (!item.done) {
-        if (!item.minWidth || document.body.clientWidth > item.minWidth) {
-          var snapshot = getElementByXpath(root, item.xpath);
-          for (var i = 0; i < snapshot.snapshotLength; i++) {
-            if (item.finish && th_interval) th_interval.clearInterval();
-            const content = snapshot.snapshotItem(i);
-            if (content.localName !== "script") {
-              console.log("got content", item, content);
-              if (item.xpath == '//*[contains(text(),"<<")]') {
-                console.log("parsing html", content);
-                // dirty
-                content.innerHTML = content.textContent.substring(
-                  1,
-                  content.textContent.length - 1
-                );
-              }
-              // apply styles
-              item.style &&
-                Object.keys(item.style).forEach((styleItem) => {
-                  console.log(
-                    "applying style",
-                    styleItem,
-                    item.style[styleItem]
-                  );
-                  content.style[styleItem] = item.style[styleItem];
-                });
-              if (item.callback) {
-                item.callback(content);
-              }
-              nodesToMutate[index] = { ...item, done: true };
+      //   if (!item.done) {
+      if (!item.minWidth || document.body.clientWidth > item.minWidth) {
+        var snapshot = getElementByXpath(root, item.xpath);
+        for (var i = 0; i < snapshot.snapshotLength; i++) {
+          if (item.finish && th_interval) th_interval.clearInterval();
+          const content = snapshot.snapshotItem(i);
+          if (content.localName !== "script") {
+            console.log("got content", item, content);
+            if (item.xpath == '//*[contains(text(),"<<")]') {
+              console.log("parsing html", content);
+              // dirty
+              content.innerHTML = content.textContent.substring(
+                1,
+                content.textContent.length - 1
+              );
             }
+            // apply styles
+            item.style &&
+              Object.keys(item.style).forEach((styleItem) => {
+                console.log("applying style", styleItem, item.style[styleItem]);
+                content.style[styleItem] = item.style[styleItem];
+              });
+            if (item.callback) {
+              item.callback(content);
+            }
+            nodesToMutate[index] = { ...item, done: true };
           }
         }
-    //   }
+      }
+      //   }
     });
   }
   let observer = new MutationObserver((mutations) =>
